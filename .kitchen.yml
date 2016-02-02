@@ -1,0 +1,41 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: 12.3.0
+  data_bags_path: 'test/integration/default/data_bags'
+
+# Install IAAS plugin from https://github.disney.com/SEESPN/vagrant-dtssiaas-plugin/
+platforms:
+  - name: rhel6
+    driver_config:
+      box: dtss-rhel66
+      box_url: http://nexus.disney.com/nexus/service/local/artifact/maven/redirect?r=VagrantBoxes&g=dtss.iaas&a=centos66&c=x86_64&v=RELEASE&e=box
+      provider: dtssiaas
+
+# rsync transfer install from https://github.com/unibet/kitchen-transport-rsync
+# Overide in .kitchen.local.yml with ssh or winrm if no rsync
+transport:
+  name: rsync
+
+
+suites:
+  - name: default
+    run_list:
+      - recipe[wdprt_sece_base]
+      - recipe[wdprt_sece_app_fdoui]
+    attributes:
+      applications:
+        nodejs:
+          new-engagement-status-ui-api:
+            deployable: true
+          new-engagement-status-ui-client:
+            deployable: true
+      env_info:
+        app_env: 'DEV'
+      chef_client:
+        conf_dir: '/tmp/kitchen'
+        init_style: 'none'
+
